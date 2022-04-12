@@ -11,5 +11,15 @@ html(lang="en")
       h1 Zoom
     main 
       h2 Welcome Zoom!
+      
+      form#nickname
+        input(type="text", placeholder="Choose your Nickname", required)
+        button Save
+
+      ul 
+      form#message
+        input(type="text", placeholder="Write a message", required)
+        button Send
+
       button Call
     script(src="/public/js/app.js") 
