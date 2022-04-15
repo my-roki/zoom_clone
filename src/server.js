@@ -3,7 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import http from "http";
-import { WebSocketServer } from "ws";
+import { Server } from "socket.io";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -16,49 +16,18 @@ app.use("/public", express.static(__dirname + "/public"));
 app.get("/", (req, res) => res.render("home"));
 app.get("/*", (req, res) => res.redirect("/"));
 
-/* 
-// http
-const handleListen = () => console.log(`Listening on http://localhost:3000`);
-app.listen(3000, handleListen);
-*/
+// Socket.io in Node JS
+const httpServer = http.createServer(app);
+const wsServer = new Server(httpServer); // after "socket.io" : v4.4.0 -> SocketIO (x) / Server (o)
 
-// Web Socket in Node JS
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server }); // after "ws": "^8.2.3" -> Websocket.Server (x) / WebSocketServer (o)
-
-const sockets = [];
-wss.on("connection", (socket) => {
-  sockets.push(socket);
-  socket["nickname"] = "Anonymous";
-  console.log("Connected Browser ✅");
-
-  socket.on("close", () => {
-    console.log("Disonnected from Browser ❌");
-  });
-  socket.on("message", (message) => {
-    const parsed = JSON.parse(message);
-    switch (parsed.type) {
-      case "nickname":
-        socket["nickname"] = parsed.payload;
-        break;
-      case "message":
-        // for All
-        sockets.forEach((aSocket) =>
-          aSocket.send(`${socket.nickname} : ${parsed.payload.toString()}`),
-        );
-
-        /* 
-        // except me
-        sockets
-          .filter((aSocket) => aSocket != socket)
-          .forEach((aSocket) =>
-            aSocket.send(`${socket.nickname} : ${parsed.payload.toString()}`),
-          );
-        */
-        break;
-    }
+wsServer.on("connection", (socket) => {
+  socket.on("enter_room", (msg, done) => {
+    console.log(msg);
+    setTimeout(() => {
+      done();
+    }, 5000);
   });
 });
 
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
-server.listen(3000, handleListen);
+httpServer.listen(3000, handleListen);
