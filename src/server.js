@@ -26,5 +26,26 @@ const wsServer = new Server(httpServer, {
   },
 }); // after "socket.io" : v4.4.0 -> SocketIO (x) / Server (o)
 
+// http://localhost:3000/admin
+instrument(wsServer, {
+  auth: false,
+});
+
+wsServer.on("connection", (socket) => {
+  socket.on("join_room", (roomName) => {
+    socket.join(roomName);
+    socket.to(roomName).emit("welcome");
+  });
+  socket.on("offer", (offer, roomName) => {
+    socket.to(roomName).emit("offer", offer);
+  });
+  socket.on("answer", (answer, roomName) => {
+    socket.to(roomName).emit("answer", answer);
+  });
+  socket.on("ice_candidate", (iceCandidate, roomName) => {
+    socket.to(roomName).emit("ice_candidate", iceCandidate);
+  });
+});
+
 const handleListen = () => console.log(`Listening on http://localhost:3000`);
 httpServer.listen(3000, handleListen);
